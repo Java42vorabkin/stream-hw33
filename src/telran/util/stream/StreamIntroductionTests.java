@@ -128,6 +128,12 @@ class StreamIntroductionTests {
 		}
 		return false;
 	}
+	/*  
+	 *  one to one - map
+	 *  many to one - collection
+	 *  one to many - flatMap
+	 */
+	//   CW33 - 1
 	private long sum(int ar[][]) {
 //		return Arrays.stream(ar).mapToLong(a -> Arrays.stream(a).asLongStream().sum()).sum();
 		return Arrays.stream(ar).flatMapToInt(Arrays::stream).asLongStream().sum();
@@ -137,10 +143,12 @@ class StreamIntroductionTests {
 		int ar[][] = {{1,2},{3,4},{5,6}};
 		assertEquals(21, sum(ar));
 	}
+	//   CW33 - 2
 	@Test
 	void evenOddTestRandom() {
 		Map<String, List<Integer>> mapEvenOdd;
 		mapEvenOdd = new Random().ints(10, 1,100).boxed().collect(Collectors.groupingBy(n -> n % 2 == 0 ? "even" : "odd"));
+		System.out.println("evenOddTestRandom   " + mapEvenOdd);
 		mapEvenOdd.forEach((k, v) -> {
 			if (k.equals("even")) {
 				v.forEach(n -> assertTrue(n %2 == 0));
@@ -152,26 +160,31 @@ class StreamIntroductionTests {
 		
 		
 	}
+	//   CW33 - 3
 	@Test
 	void evenOddDownStream() {
 		List<Integer> list = Arrays.asList(1, 2 ,3,4,8,10, 7);
 		Map<String, Long> mapOddEven = list.stream()
 				.collect(Collectors.groupingBy(n -> n % 2 == 0 ? "even" : "odd", Collectors.counting()));
+		System.out.println("evenOddDownStream   " + mapOddEven);
 		assertEquals(3, mapOddEven.get("odd"));
 		assertEquals(4, mapOddEven.get("even"));
 		
 		
 	}
+	//   CW33 - 4
 	@Test
 	void digitsGroupingTest() {
 		List<Integer> list = Arrays.asList(10, 300, 500, 1, 2, -100);
 		Map<Integer, Integer> mapDigits = list.stream()
 				.collect(Collectors.groupingBy(n -> Integer.toString(Math.abs(n)).length(),
 						Collectors.summingInt(n -> n)));
+		System.out.println("\ndigitsGroupingTest   " + mapDigits);
 		assertEquals(3, mapDigits.get(1));
 		assertEquals(10, mapDigits.get(2));
 		assertEquals(700, mapDigits.get(3));
 	}
+	//   CW33 - 5
 	@Test
 	void testOccurrencesCount() {
 		String str = "lmn ab lmn aa; a, lmn ab.aa";
@@ -188,15 +201,21 @@ class StreamIntroductionTests {
 				.map(e -> String.format("%s -> %d", e.getKey(),e.getValue()))//stream entries to stream of strings
 				.collect(Collectors.joining("\n")) + "\n";
 	}
+	//   HW33 - 1
 	private void arrayShuffling(int ar[]) {
 		//TODO printing out array in the shuffling order
 		//with out any additional collections
 		//one pipeline 
+		new Random().ints(0, ar.length).distinct().limit(ar.length)
+			.forEach(el -> System.out.print(ar[el] + "  "));
 	}
 	@Test
 	void shufflingTest() {
-		arrayShuffling(new int[] {1,2,3,4});
+		System.out.println("\n----------shufflingTest begins------------");
+		arrayShuffling(new int[] {1,2,3,4,5,6,7,8,9,0});
+		System.out.println("\n----------shufflingTest finishes------------");
 	}
+	//   HW33 - 2
 	private void digitStatistics() {
 		//TODO 
 		//generating 1_000_000 random positive numbers [1-Integer.MAX_VALUE)
@@ -204,10 +223,23 @@ class StreamIntroductionTests {
 		// 1: <occurrences value>
 		// 2: ...
 		// 4: 
+		final long N_RUNS = 1_000_000;
+		final int MIN_VALUE = 1;
+		
+		new Random().ints(N_RUNS, MIN_VALUE, Integer.MAX_VALUE)
+		.flatMap(n -> Integer.toString(n).chars()).boxed()
+		.collect(Collectors.groupingBy(n -> n, Collectors.counting()))
+//		.collect(Collectors.groupingBy(n -> n, HashMap::new, Collectors.counting()))
+		.entrySet().stream()
+		.sorted((e1, e2) ->Long.compare(e2.getValue(), e1.getValue()))
+//		.sorted(Map.Entry.<Integer,Long>comparingByValue().reversed())
+		.forEach(e -> System.out.printf("%c : %d\n", e.getKey(), e.getValue()));
 	}
 	@Test
 	void digitStatisticsTest() {
+		System.out.println("\n----------digitStatisticsTest begins------------");
 		digitStatistics();
+		System.out.println("----------shufflingTest finishes------------");
 	}
 
 }
